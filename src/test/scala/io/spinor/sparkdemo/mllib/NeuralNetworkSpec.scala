@@ -35,15 +35,16 @@ class NeuralNetworkSpec extends FlatSpec with DemoUtil with Matchers {
 
     val classifier = new MultilayerPerceptronClassifier()
     classifier
-      .setLayers(Array(100, 100))
+      .setLayers(Array(784, 100))
       .setBlockSize(125)
       .setSeed(1234L)
-      .setMaxIter(2)
+      .setMaxIter(10)
 
     val model = classifier.fit(trainingPoints)
 
     val testData = mNISTData.getTestData()
-    val testPoints = sparkContext.parallelize(testData.map(entry => LabeledPoint(entry._2, Vectors.dense(entry._1)))).toDF()
+    val testPoints = sparkContext.parallelize(testData.map(entry => {
+    LabeledPoint(entry._2, Vectors.dense(entry._1))})).toDF()
     val result = model.transform(testPoints)
     val predictionAndLabels = result.select("prediction", "label")
     val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
